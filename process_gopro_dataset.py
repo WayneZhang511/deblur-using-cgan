@@ -2,7 +2,7 @@ import os
 from glob import glob
 import shutil
 
-base_dir = 'GOPRO_Large/train'
+base_dir = '~/GOPRO_Large/train'
 folders = os.listdir(base_dir)
 
 a_dir = 'a'
