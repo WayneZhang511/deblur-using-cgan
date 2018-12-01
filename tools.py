@@ -32,12 +32,35 @@ def split(dir, train_frac=0.8, test_frac=0.1, sort=False):
         os.rename(inpath, outpath)
 
 ### resize
-def crop(img):
+def crop_center(img):
     cropx, cropy = 256, 256
     y,x = img.shape
     startx = x//2-(cropx//2)
     starty = y//2-(cropy//2)
     return img[starty:starty+cropy,startx:startx+cropx]
+
+def crop_from(a, startx, starty, cropx=256, cropy=256):
+    return a[starty:starty+cropy,startx:startx+cropx]
+
+def crop_and_combine(src, dataset_name):
+    a_dir = os.path.join(src, 'a')
+    b_dir = os.path.join(src, 'b')
+    output_dir = os.path.join(src, dataset_name)
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+        
+    for image_path in glob(os.path.join(a_dir, '*.png')):
+        image_name = os.path.basename(image_path)
+        
+        a = scipy.misc.imread(image_path)
+        b = scipy.misc.imread(os.path.join(b_dir, image_name))
+
+        for i in range(5):
+            startx = random.randint(a.shape[0] - 256)
+            starty = random.randint(a.shape[1] - 256)
+            a = crop_from(a, startx, starty)
+            b = crop_from(b, startx, starty)
+            scipy.misc.imsave(os.path.join(output_dir, i + image_name), np.concatenate([a, b], axis=1))
 
 def combine(src, dataset_name):
     a_dir = os.path.join(src, 'a')
@@ -53,9 +76,9 @@ def combine(src, dataset_name):
         b = scipy.misc.imread(os.path.join(b_dir, image_name))
         
         if a.shape[0] != 256:
-            a = crop(a)
+            a = crop_center(a)
         if b.shape[0] != 256:
-            b = crop(b)
+            b = crop_center(b)
             
         scipy.misc.imsave(os.path.join(output_dir, image_name), np.concatenate([a, b], axis=1))
 
