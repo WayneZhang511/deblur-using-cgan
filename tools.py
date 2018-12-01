@@ -5,7 +5,7 @@ import scipy.misc
 from glob import glob
 
 ### split
-def split(dir, train_frac=0.8, test_frac=0.1, sort=False):
+def split(dir, train_frac=0.9, test_frac=0, sort=False):
     random.seed(0)
 
     files = glob(os.path.join(dir, "*.png"))
@@ -56,11 +56,12 @@ def crop_and_combine(src, dataset_name):
         b = scipy.misc.imread(os.path.join(b_dir, image_name))
 
         for i in range(5):
-            startx = random.randint(a.shape[0] - 256)
-            starty = random.randint(a.shape[1] - 256)
-            a = crop_from(a, startx, starty)
-            b = crop_from(b, startx, starty)
-            scipy.misc.imsave(os.path.join(output_dir, i + image_name), np.concatenate([a, b], axis=1))
+            startx = random.randint(0, a.shape[1] - 256)
+            starty = random.randint(0, a.shape[0] - 256)
+            #print(a.shape)
+            #print(startx)
+            #print(starty)
+            scipy.misc.imsave(os.path.join(output_dir, str(i) + '-' + image_name), np.concatenate([crop_from(a, startx, starty), crop_from(b, startx, starty)], axis=1))
 
 def combine(src, dataset_name):
     a_dir = os.path.join(src, 'a')
@@ -83,7 +84,8 @@ def combine(src, dataset_name):
         scipy.misc.imsave(os.path.join(output_dir, image_name), np.concatenate([a, b], axis=1))
 
 if __name__ == '__main__':
-    datast_name = 'mixed'
+    datast_name = 'gopro'
+    src = "/home/yz3243/deblur-using-cgan"
     ### generate dataset
-    combine("/Users/wayne/Desktop/CV/project/cgan/data", datast_name)
-    split("/Users/wayne/Desktop/CV/project/cgan/data" + datast_name)
+    crop_and_combine(src, datast_name)
+    split(os.path.join(src, datast_name))

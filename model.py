@@ -17,8 +17,8 @@ class pix2pix:
                  batch_size=1, 
                  input_width=256, 
                  input_height=256, 
-                 input_channels=1, 
-                 output_channels=1, 
+                 input_channels=3, 
+                 output_channels=3, 
                  df_dim=64, 
                  gf_dim=64, 
                  L1_lambda=100,
@@ -250,9 +250,9 @@ class pix2pix:
                 else:
                     batch_images = np.array(batch).astype(np.float32)
                 #print(batch_images.shape) 
-                # why reversed???
-                input_A = batch_images[:, :, :self.input_width, :]
-                input_B = batch_images[:, :, self.input_width:, :]
+                # B to A
+                input_B = batch_images[:, :, :self.input_width, :]
+                input_A = batch_images[:, :, self.input_width:, :]
                 
                 # feed in data
                 _, d_loss, summaries = self.sess.run([d_optimizer, self.d_loss, self.summaries],
@@ -341,13 +341,13 @@ class pix2pix:
             batch_images = np.array(batch).astype(np.float32)[:,:,:,None]
         else:
             batch_images = np.array(batch).astype(np.float32)
-            
-        input_A = batch_images[:,:,:self.input_width,:]
-        input_B = batch_images[:,:,self.input_width:,:]
+        
+        # B to A
+        input_B = batch_images[:,:,:self.input_width,:]
+        input_A = batch_images[:,:,self.input_width:,:]
         
         return input_A, input_B
     
-    # TODO: what happened here???
     # save model            
     @property
     def model_dir(self):
