@@ -222,8 +222,9 @@ class pix2pix:
         print('perpare data...')
         # perpare data
         data_list = glob(os.path.join(args.dataset_dir, args.dataset_name, args.phase, '*.png'))
-        #print(os.path.join(args.dataset_dir, args.dataset_name, args.phase, '*.png'))
-        #print(len(data_list))
+        print(data_list)
+        print(os.path.join(args.dataset_dir, args.dataset_name, args.phase, '*.png'))
+        print(len(data_list))
         batch_idxs = int(len(data_list) / self.batch_size)
         #print(batch_idxs)
         # load checkpoint
