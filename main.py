@@ -8,7 +8,7 @@ import tensorflow as tf
 
 parser = argparse.ArgumentParser()
 # parser.add_argument('--lambd', type=float, default=100, help='weights of l1 loss')
-parser.add_argument('--batch_size', type=int, default=1, help='batch size')
+parser.add_argument('--batch_size', type=int, default=64, help='batch size')
 parser.add_argument('--lr', type=float, default=0.0002, help='learning rate')
 parser.add_argument('--beta1', type=float, default=0.5, help='beta1')
 parser.add_argument('--beta2', type=float, default=0.999, help='beta2')
