@@ -48,5 +48,5 @@ def calculate_avg_psnr(dir):
   print('Ground truth: psnr %f \n' % (sum_gt_psnr / size))
   print('Output: psnr %f \n' % (sum_op_psnr / size))
 
-calculate_avg_psnr('/Users/wayne/Desktop')
+calculate_avg_psnr('test')
 
