@@ -33,7 +33,7 @@ def calculate_avg_psnr(dir):
     #gt_ssim = ssim(input_img, groud_truth)
     print('Ground truth: psnr %f\n' % (gt_psnr))
 
-    op_psnr = psnr(input_img, output_img)
+    op_psnr = psnr(groud_truth, output_img)
     #op_ssim = ssim(input_img, output_img)
     print('Output: psnr %f \n' % (op_psnr))
 
