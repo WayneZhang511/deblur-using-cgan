@@ -307,8 +307,9 @@ class pix2pix:
             else:
                 batch_images = np.array(batch).astype(np.float32)
             # split B if any
-            input_A = batch_images[:, :, :self.input_width, :]
-            input_B = batch_images[:, :, self.input_width:, :]
+            # B to A
+            input_B = batch_images[:, :, :self.input_width, :]
+            input_A = batch_images[:, :, self.input_width:, :]
             
             # run model
             sample_B = self.sess.run(self.fake_B,

@@ -1,5 +1,6 @@
 import tensorflow as tf
 from glob import glob
+import os
 
 def compute_psnr(img1, img2):
   psnr = tf.image.psnr(img1, img2, max_val=255)
@@ -21,7 +22,7 @@ def calculate_avg_psnr(dir):
   sum_op_ssim = 0
 
   for image_path in image_paths:
-    image = tf.decode_png(image_path)
+    image = tf.image.decode_png(image_path)
 
     input_img = image[:, :256, :]
     groud_truth = image[:, 256:512, :]
@@ -29,7 +30,8 @@ def calculate_avg_psnr(dir):
 
     gt_psnr = compute_psnr(input_img, groud_truth)
     gt_ssim = compute_ssim(input_img, groud_truth)
-    print('Ground truth: psnr %f, ssim %f \n' % (gt_psnr[0, 0], gt_ssim[0, 0]))
+    print(tf.shape(gt_psnr))
+    print('Ground truth: psnr %f, ssim %f \n' % (gt_psnr[0], gt_ssim))
 
     op_psnr = compute_psnr(input_img, output_img)
     op_ssim = compute_ssim(input_img, output_img)
@@ -46,5 +48,5 @@ def calculate_avg_psnr(dir):
   print('Ground truth: psnr %f, ssim %f \n' % (sum_gt_psnr / size, sum_gt_ssim / size))
   print('Output: psnr %f, ssim %f \n' % (sum_op_psnr / size, sum_op_ssim / size))
 
-
+calculate_avg_psnr('test')
 
