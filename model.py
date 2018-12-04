@@ -364,6 +364,8 @@ class pix2pix:
             return
 
         for path in data_list:
+            image_name = os.path.basename(path)
+            print('Deblurring image {}'.format(image_name))
             image = get_image(path)
 
             canvas = np.zeros_like(image)
@@ -375,7 +377,7 @@ class pix2pix:
 
             output = merge_images(canvas, output_B)
 
-            image_name = os.path.basename(path)
+            
             output_dir = os.path.join(args.dataset_dir, 'deblurred-' + args.dataset_name)
             if not os.path.exists(output_dir):
                 os.makedirs(output_dir)
