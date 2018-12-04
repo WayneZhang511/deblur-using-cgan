@@ -67,6 +67,9 @@ def transform(image, npx=64, is_crop=True, resize_w=64):
 def inverse_transform(images):
     return (images+1.)/2.    
 
+def inv_transform(images):
+    return np.round((images + 1) * 255 / 2)
+
 def generate_patches(image):
     m,n,_ = image.shape
 
