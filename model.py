@@ -350,7 +350,7 @@ class pix2pix:
         
         return input_A, input_B
     
-    # image size: 1280 × 720
+    # image size: 1280*720
     def deblur(self, args):
         data_list = glob(os.path.join(args.dataset_dir, args.dataset_name, '*.png'))
 
@@ -370,9 +370,9 @@ class pix2pix:
 
             canvas = np.zeros_like(image)
 
-            input_A = generate_patches(image, stride)
+            input_A = generate_patches(image)
 
-            output_B = self.sess.run(self.fake_b,
+            output_B = self.sess.run(self.fake_B,
                         feed_dict={self.input_A:input_A})
 
             output = merge_images(canvas, output_B)
@@ -381,7 +381,7 @@ class pix2pix:
             output_dir = os.path.join(args.dataset_dir, 'deblurred-' + args.dataset_name)
             if not os.path.exists(output_dir):
                 os.makedirs(output_dir)
-            scipy.misc.imsave('{}/{}'.format(output_dir, image_name))
+            scipy.misc.imsave('{}/{}'.format(output_dir, image_name), output)
 
     # save model            
     @property

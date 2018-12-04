@@ -75,14 +75,14 @@ def generate_patches(image):
     row = 0
     i_stride = 232
     for i in range(3):
-    col = 0
-    j_stride = 205
-    for j in range(6):
-        if j == 5:
-            col -= 1
+        col = 0
+        j_stride = 205
+        for j in range(6):
+            if j == 5:
+                col -= 1
 
-        patches.append(image[row:row+256, col:col+256, :])
-        col += j_stride
+            patches.append(image[row:row+256, col:col+256, :])
+            col += j_stride
 
         row += i_stride
 

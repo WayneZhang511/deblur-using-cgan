@@ -40,6 +40,10 @@ def check_dir():
 def main(_):
     check_dir()
     args = parser.parse_args()
+    if args.phase == 'test':
+        args.batch_size = 1
+    elif args.phase == 'deblur':
+        args.batch_size = 18
     # gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.5)
     # config = tf.ConfigProto(log_device_placement=True, allow_soft_placement=True, gpu_options=gpu_options)
     config = tf.ConfigProto()
@@ -51,9 +55,10 @@ def main(_):
             test_dir=args.test_dir, checkpoint_name=args.checkpoint_name)
         if args.phase == 'train':
             model.train(args)
-        else if args.phase == 'test':
+        elif args.phase == 'test':
             model.test(args)
         else:
+            # only work for input image size 1280 x 720
             model.deblur(args)
 
 
