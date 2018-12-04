@@ -50,7 +50,7 @@ def calculate_avg_psnr(dir):
 
 # for seperated images in different folders
 def calculate_avg_psnr_sep(input_img_dir, ground_truth_dir, output_img_dir):
-  image_paths = glob(os.path.join(output_img_dir, 'gopro_*.png'))
+  image_paths = glob(os.path.join(output_img_dir, '*.png'))
 
   sum_gt_psnr = 0
   sum_gt_ssim = 0
