@@ -350,6 +350,37 @@ class pix2pix:
         
         return input_A, input_B
     
+    # image size: 1280 × 720
+    def deblur(self, args):
+        data_list = glob(os.path.join(args.dataset_dir, args.dataset_name, '*.png'))
+
+        counter = 0
+        check_bool, counter = self.load_model(self.checkpoint_dir, self.checkpoint_name)
+
+        if check_bool:
+            print('Load model successfully')
+        else:
+            print('Fail to load model')
+            return
+
+        for path in data_list:
+            image = get_image(path)
+
+            canvas = np.zeros_like(image)
+
+            input_A = generate_patches(image, stride)
+
+            output_B = self.sess.run(self.fake_b,
+                        feed_dict={self.input_A:input_A})
+
+            output = merge_images(canvas, output_B)
+
+            image_name = os.path.basename(path)
+            output_dir = os.path.join(args.dataset_dir, 'deblurred-' + args.dataset_name)
+            if not os.path.exists(output_dir):
+                os.makedirs(output_dir)
+            scipy.misc.imsave('{}/{}'.format(output_dir, image_name))
+
     # save model            
     @property
     def model_dir(self):

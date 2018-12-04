@@ -51,8 +51,11 @@ def main(_):
             test_dir=args.test_dir, checkpoint_name=args.checkpoint_name)
         if args.phase == 'train':
             model.train(args)
-        else:
+        else if args.phase == 'test':
             model.test(args)
+        else:
+            model.deblur(args)
+
 
 if __name__ == '__main__':
     tf.app.run()
