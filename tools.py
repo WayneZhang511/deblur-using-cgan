@@ -85,7 +85,7 @@ def combine(src, dataset_name):
 
 if __name__ == '__main__':
     datast_name = 'gopro'
-    src = "/home/yz3243/deblur-using-cgan"
+    src = "."
     ### generate dataset
     crop_and_combine(src, datast_name)
     split(os.path.join(src, datast_name))
