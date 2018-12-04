@@ -375,7 +375,7 @@ class pix2pix:
             output_B = self.sess.run(self.fake_B,
                         feed_dict={self.input_A:input_A})
 
-            output = merge_images(canvas, output_B)
+            output = merge_images(canvas, inverse_transform(output_B))
 
             
             output_dir = os.path.join(args.dataset_dir, 'deblurred-' + args.dataset_name)
