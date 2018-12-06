@@ -78,7 +78,8 @@ class pix2pix:
         # generate
         self.fake_B = self.generator(self.input_A, reuse=False)
         self.fake_AB = tf.concat([self.input_A, self.fake_B], 3)
-        self.fake_AB_summary = tf.summary.image('fake_AB', self.fake_AB)
+        # self.input_A_summary = tf.summary.image('input_A', self.input_A)
+        # self.fake_B_summary = tf.summary.image('fake_B', self.fake_B)
         
         # feed fake pair in
         self.D_fake = self.discriminator(self.fake_AB, reuse=True)
@@ -91,14 +92,17 @@ class pix2pix:
         # self.D_fake_loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=self.D_fake_logits,labels=tf.zeros_like(self.D_fake_logits)))
         # sum up
         # self.d_loss = self.D_real_loss + self.D_fake_loss
-        self.d_loss = tf.reduce_mean(-(tf.log(D_real + EPS) + tf.log(1 - D_fake + EPS)))
+        self.d_real_loss = tf.reduce_mean(-tf.log(self.D_real + EPS))
+        self.d_fake_loss = tf.reduce_mean(-tf.log(1 - self.D_fake + EPS))
+        self.d_loss = self.d_real_loss + self.d_fake_loss
+        # self.d_loss = tf.reduce_mean(-(tf.log(self.D_real + EPS) + tf.log(1 - self.D_fake + EPS)))
         
         # calculate generator loss
         # L1 loss
         self.L1_loss = tf.reduce_mean(tf.abs(self.fake_B - self.input_B))
         # fake images: encourage ones
         # self.G_adv_loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=self.D_fake_logits, labels=tf.ones_like(self.D_fake_logits)))
-        self.G_adv_loss = tf.reduce_mean(-(tf.log(D_fake + EPS)))
+        self.G_adv_loss = tf.reduce_mean(-(tf.log(self.D_fake + EPS)))
         # sum up
         self.g_loss = self.L1_lambda * self.L1_loss + self.G_adv_loss
             
@@ -108,6 +112,8 @@ class pix2pix:
         self.g_vars = [var for var in t_vars if 'g_' in var.name]
         
         # tensorboard
+        self.d_real_loss_summary = tf.summary.scalar('d_real_loss', self.d_real_loss)
+        self.d_fake_loss_summary = tf.summary.scalar('d_fake_loss', self.d_fake_loss)
         self.d_loss_summary = tf.summary.scalar('d_loss', self.d_loss)
         self.L1_loss_summary = tf.summary.scalar('L1_loss', self.L1_loss)
         self.g_loss_summary = tf.summary.scalar('g_loss', self.g_loss)
