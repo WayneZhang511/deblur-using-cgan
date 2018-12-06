@@ -141,45 +141,45 @@ class pix2pix:
                                padding='SAME'):
                 
                 # decoder
-                conv1 = slim.conv2d(image, self.gf_dim, [5,5], stride=2, normalizer_fn=None, scope='g_conv1')
-                conv2 = slim.conv2d(leaky_relu(conv1), self.gf_dim * 2, [5,5], stride=2, scope='g_conv2')
-                conv3 = slim.conv2d(leaky_relu(conv2), self.gf_dim * 4, [5,5], stride=2, scope='g_conv3')
-                conv4 = slim.conv2d(leaky_relu(conv3), self.gf_dim * 8, [5,5], stride=2, scope='g_conv4')
-                conv5 = slim.conv2d(leaky_relu(conv4), self.gf_dim * 8, [5,5], stride=2, scope='g_conv5')
-                conv6 = slim.conv2d(leaky_relu(conv5), self.gf_dim * 8, [5,5], stride=2, scope='g_conv6')
-                conv7 = slim.conv2d(leaky_relu(conv6), self.gf_dim * 8, [5,5], stride=2, scope='g_conv7')
-                conv8 = slim.conv2d(leaky_relu(conv7), self.gf_dim * 8, [5,5], stride=2, activation_fn=None, scope='g_conv8')
+                conv1 = slim.conv2d(image, self.gf_dim, [4,4], stride=2, normalizer_fn=None, scope='g_conv1')
+                conv2 = slim.conv2d(leaky_relu(conv1), self.gf_dim * 2, [4,4], stride=2, scope='g_conv2')
+                conv3 = slim.conv2d(leaky_relu(conv2), self.gf_dim * 4, [4,4], stride=2, scope='g_conv3')
+                conv4 = slim.conv2d(leaky_relu(conv3), self.gf_dim * 8, [4,4], stride=2, scope='g_conv4')
+                conv5 = slim.conv2d(leaky_relu(conv4), self.gf_dim * 8, [4,4], stride=2, scope='g_conv5')
+                conv6 = slim.conv2d(leaky_relu(conv5), self.gf_dim * 8, [4,4], stride=2, scope='g_conv6')
+                conv7 = slim.conv2d(leaky_relu(conv6), self.gf_dim * 8, [4,4], stride=2, scope='g_conv7')
+                conv8 = slim.conv2d(leaky_relu(conv7), self.gf_dim * 8, [4,4], stride=2, activation_fn=None, scope='g_conv8')
                 
                 # encoder
-                dconv1 = slim.conv2d_transpose(tf.nn.relu(conv8), self.gf_dim * 8, [5,5], stride=2, activation_fn=None, scope='g_dconv1')
+                dconv1 = slim.conv2d_transpose(tf.nn.relu(conv8), self.gf_dim * 8, [4,4], stride=2, activation_fn=None, scope='g_dconv1')
                 dconv1 = tf.nn.dropout(dconv1, 0.5)
                 dconv1 = tf.concat([dconv1, conv7], 3)
                 
-                dconv2 = slim.conv2d_transpose(tf.nn.relu(dconv1), self.gf_dim * 8, [5,5], stride=2, activation_fn=None, scope='g_dconv2')
+                dconv2 = slim.conv2d_transpose(tf.nn.relu(dconv1), self.gf_dim * 8, [4,4], stride=2, activation_fn=None, scope='g_dconv2')
                 dconv2 = tf.nn.dropout(dconv2, 0.5)
                 dconv2 = tf.concat([dconv2, conv6], 3)
                 
-                dconv3 = slim.conv2d_transpose(tf.nn.relu(dconv2), self.gf_dim * 8, [5,5], stride=2, activation_fn=None, scope='g_dconv3')
+                dconv3 = slim.conv2d_transpose(tf.nn.relu(dconv2), self.gf_dim * 8, [4,4], stride=2, activation_fn=None, scope='g_dconv3')
                 dconv3 = tf.nn.dropout(dconv3, 0.5)
                 dconv3 = tf.concat([dconv3, conv5], 3)
                 
-                dconv4 = slim.conv2d_transpose(tf.nn.relu(dconv3), self.gf_dim * 8, [5,5], stride=2, activation_fn=None, scope='g_dconv4')
+                dconv4 = slim.conv2d_transpose(tf.nn.relu(dconv3), self.gf_dim * 8, [4,4], stride=2, activation_fn=None, scope='g_dconv4')
                 # dconv4 = tf.nn.dropout(dconv4, 0.5)
                 dconv4 = tf.concat([dconv4, conv4], 3)
                 
-                dconv5 = slim.conv2d_transpose(tf.nn.relu(dconv4), self.gf_dim * 4, [5,5], stride=2, activation_fn=None, scope='g_dconv5')
+                dconv5 = slim.conv2d_transpose(tf.nn.relu(dconv4), self.gf_dim * 4, [4,4], stride=2, activation_fn=None, scope='g_dconv5')
                 # dconv5 = tf.nn.dropout(dconv5, 0.5)
                 dconv5 = tf.concat([dconv5, conv3], 3)
                 
-                dconv6 = slim.conv2d_transpose(tf.nn.relu(dconv5), self.gf_dim * 2, [5,5], stride=2, activation_fn=None, scope='g_dconv6')
+                dconv6 = slim.conv2d_transpose(tf.nn.relu(dconv5), self.gf_dim * 2, [4,4], stride=2, activation_fn=None, scope='g_dconv6')
                 # dconv6 = tf.nn.dropout(dconv6, 0.5)
                 dconv6 = tf.concat([dconv6, conv2], 3)
                 
-                dconv7 = slim.conv2d_transpose(tf.nn.relu(dconv6), self.gf_dim, [5,5], stride=2, activation_fn=None, scope='g_dconv7')
+                dconv7 = slim.conv2d_transpose(tf.nn.relu(dconv6), self.gf_dim, [4,4], stride=2, activation_fn=None, scope='g_dconv7')
                 # dconv7 = tf.nn.dropout(dconv7, 0.5)
                 dconv7 = tf.concat([dconv7, conv1], 3)
                 
-                output = slim.conv2d_transpose(tf.nn.relu(dconv7), self.output_channels, [5,5], stride=2, normalizer_fn=None, activation_fn=tf.nn.tanh, scope='g_out')
+                output = slim.conv2d_transpose(tf.nn.relu(dconv7), self.output_channels, [4,4], stride=2, normalizer_fn=None, activation_fn=tf.nn.tanh, scope='g_out')
                 
                 return output
             
