@@ -10,8 +10,12 @@ def perceptual_loss(real_img, gen_img):
   batch_size = real_img.shape[0]
   vgg_net = Vgg19()
   vgg_net.build(tf.concat([real_img, gen_img], axis = 0))
-
-  return tf.reduce_mean(tf.reduce_sum(tf.square(normalize(vgg_net.relu3_3[:batch_size]) - normalize(vgg_net.relu3_3[batch_size:])), axis = 3))
+  #loss =  tf.reduce_mean(tf.square(vgg_net.relu3_3[batch_size:] - vgg_net.relu3_3[:batch_size]),axis=[1,2])
+  #sum with channel
+  #loss = tf.reduce_sum(loss, axis=-1)
+  #return loss
+  return tf.reduce_mean(tf.square(normalize(vgg_net.relu3_3[:batch_size]) - normalize(vgg_net.relu3_3[batch_size:])))
+  # return tf.reduce_mean(tf.reduce_sum(tf.square(normalize(vgg_net.relu3_3[:batch_size]) - normalize(vgg_net.relu3_3[batch_size:])), axis = 3))
 
 def normalize(tensor):
   tensor = tf.div(

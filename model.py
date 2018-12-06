@@ -21,7 +21,7 @@ class pix2pix:
                  output_channels=3, 
                  df_dim=64, 
                  gf_dim=64, 
-                 content_lambda=10,
+                 content_lambda=100,
                  checkpoint_dir=None,
                  checkpoint_name=None,
                  dataset_name=None,
@@ -99,7 +99,7 @@ class pix2pix:
         
         # calculate generator loss
         # L1 loss
-        # L1_loss = tf.reduce_mean(tf.abs(self.fake_B - self.input_B))
+        #self.L1_loss = tf.reduce_mean(tf.abs(self.fake_B - self.input_B))
         # perceptual loss
         perc_loss = perceptual_loss(self.input_B, self.fake_B)
         # content loss
@@ -109,17 +109,27 @@ class pix2pix:
         self.G_adv_loss = tf.reduce_mean(-(tf.log(self.D_fake + EPS)))
         # sum up
         self.g_loss = self.content_lambda * self.content_loss + self.G_adv_loss
+        # self.g_loss = self.L1_loss * 100 + self.content_lambda * self.content_loss + self.G_adv_loss
             
         # trainable variables
         t_vars = tf.trainable_variables()
         self.d_vars = [var for var in t_vars if 'd_' in var.name]
         self.g_vars = [var for var in t_vars if 'g_' in var.name]
+       
+        # metrics
+
+        self.PSNR = tf.reduce_mean(tf.image.psnr(((self.fake_B + 1.0) / 2.0), ((self.input_B + 1.0) / 2.0), max_val = 1.0))
+        self.ssim = tf.reduce_mean(tf.image.ssim(((self.fake_B + 1.0) / 2.0), ((self.input_B + 1.0) / 2.0), max_val = 1.0))
         
+        self.logging_PSNR = tf.summary.scalar(name = 'PSNR', tensor = self.PSNR)
+        self.logging_ssim = tf.summary.scalar(name = 'ssim', tensor = self.ssim)
+ 
         # tensorboard
         self.d_real_loss_summary = tf.summary.scalar('d_real_loss', self.d_real_loss)
         self.d_fake_loss_summary = tf.summary.scalar('d_fake_loss', self.d_fake_loss)
         self.d_loss_summary = tf.summary.scalar('d_loss', self.d_loss)
-        self.L1_loss_summary = tf.summary.scalar('content_loss', self.content_loss)
+        self.content_loss_summary = tf.summary.scalar('content_loss', self.content_loss)
+        # self.L1_loss_summary = tf.summary.scalar('L1_loss', self.L1_loss)
         self.g_loss_summary = tf.summary.scalar('g_loss', self.g_loss)
         self.summaries = tf.summary.merge_all()
         self.train_summary_writer = tf.summary.FileWriter('logs/train', self.sess.graph)
@@ -274,14 +284,14 @@ class pix2pix:
                 # feed in data
                 _, d_loss, summaries = self.sess.run([d_optimizer, self.d_loss, self.summaries],
                                                     feed_dict={self.input_A:input_A, self.input_B:input_B})
-                _, g_loss, content_loss, summaries = self.sess.run([g_optimizer, self.g_loss, self.content_loss, self.summaries],
+                _, g_loss, content_loss, psnr, ssim, summaries = self.sess.run([g_optimizer, self.g_loss, self.content_loss, self.PSNR, self.ssim, self.summaries],
                                                              feed_dict={self.input_A:input_A, self.input_B:input_B})
                 #print('writing logs...') 
                 # update summary
                 counter += 1
                 end_time = time.time()
                 total_time = end_time - start_time
-                print('epoch{}[{}/{}]:phase:{}, total_time:{:.4f}, d_loss:{:.4f}, g_loss:{:.4f}, content_loss:{:.4f}'.format(epoch, idx, batch_idxs, args.phase, total_time, d_loss, g_loss, self.content_lambda*content_loss))
+                print('epoch{}[{}/{}]:phase:{}, total_time:{:.4f}, d_loss:{:.4f}, g_loss:{:.4f}, content_loss:{:.4f}, PSNR:{:.4f}, SSIM:{:.4f}'.format(epoch, idx, batch_idxs, args.phase, total_time, d_loss, g_loss, self.content_lambda*content_loss, psnr, ssim))
                 self.train_summary_writer.add_summary(summaries, global_step=counter)
                 
                 # sample and save checkpoint
