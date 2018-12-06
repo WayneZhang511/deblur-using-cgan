@@ -73,28 +73,32 @@ class pix2pix:
         assert self.input_AB.get_shape().as_list() == [self.batch_size, self.input_height, self.input_width, self.input_channels + self.output_channels]
         
         # feed real pair in
-        self.D_real_logits = self.discriminator(self.input_AB, reuse=False)
+        self.D_real = self.discriminator(self.input_AB, reuse=False)
         
         # generate
         self.fake_B = self.generator(self.input_A, reuse=False)
         self.fake_AB = tf.concat([self.input_A, self.fake_B], 3)
+        self.fake_AB_summary = tf.summary.image('fake_AB', self.fake_AB)
         
         # feed fake pair in
-        self.D_fake_logits = self.discriminator(self.fake_AB, reuse=True)
+        self.D_fake = self.discriminator(self.fake_AB, reuse=True)
         
+        EPS = 1e-12
         # calculate discriminator loss
         # real images: encourage ones
-        self.D_real_loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=self.D_real_logits,labels=tf.ones_like(self.D_real_logits)))
+        #self.D_real_loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=self.D_real_logits,labels=tf.ones_like(self.D_real_logits)))
         # fake images: encourage zeros
-        self.D_fake_loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=self.D_fake_logits,labels=tf.zeros_like(self.D_fake_logits)))
+        # self.D_fake_loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=self.D_fake_logits,labels=tf.zeros_like(self.D_fake_logits)))
         # sum up
-        self.d_loss = self.D_real_loss + self.D_fake_loss
+        # self.d_loss = self.D_real_loss + self.D_fake_loss
+        self.d_loss = tf.reduce_mean(-(tf.log(D_real + EPS) + tf.log(1 - D_fake + EPS)))
         
         # calculate generator loss
         # L1 loss
         self.L1_loss = tf.reduce_mean(tf.abs(self.fake_B - self.input_B))
         # fake images: encourage ones
-        self.G_adv_loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=self.D_fake_logits, labels=tf.ones_like(self.D_fake_logits)))
+        # self.G_adv_loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=self.D_fake_logits, labels=tf.ones_like(self.D_fake_logits)))
+        self.G_adv_loss = tf.reduce_mean(-(tf.log(D_fake + EPS)))
         # sum up
         self.g_loss = self.L1_lambda * self.L1_loss + self.G_adv_loss
             
@@ -180,22 +184,25 @@ class pix2pix:
                                normalizer_fn=slim.batch_norm,
                                padding='SAME'):
                 # 256 -> 128
-                conv1 = slim.conv2d(image, self.df_dim, [5,5], stride=2, normalizer_fn=None, scope='d_conv1')
+                conv1 = slim.conv2d(image, self.df_dim, [4,4], stride=2, normalizer_fn=None, scope='d_conv1')
                 
                 # 128 -> 64
-                conv2 = slim.conv2d(leaky_relu(conv1), self.df_dim * 2, [5,5], stride=2, scope='d_conv2')
+                conv2 = slim.conv2d(leaky_relu(conv1), self.df_dim * 2, [4,4], stride=2, scope='d_conv2')
                 
                 # 64 -> 32
-                conv3 = slim.conv2d(leaky_relu(conv2), self.df_dim * 4, [5,5], stride=2, scope='d_conv3')
+                conv3 = slim.conv2d(leaky_relu(conv2), self.df_dim * 4, [4,4], stride=2, scope='d_conv3')
                 
-                # 32 -> 16
-                conv4 = slim.conv2d(leaky_relu(conv3), self.df_dim * 8, [5,5], stride=2, scope='d_conv4')
+                # 32 -> 32
+                conv4 = slim.conv2d(leaky_relu(conv3), self.df_dim * 8, [4,4], stride=1, scope='d_conv4')
                 
+                # 32 -> 32
+                conv5 = slim.conv2d(leaky_relu(conv4), 1, [4,4], stride=1, scope='d_conv5')
+
                 # flatten
-                conv4_flat = tf.reshape(conv4, [self.batch_size, -1])
-                fc1 = slim.fully_connected(conv4_flat, 1, normalizer_fn=None, activation_fn=None, scope='d_fc1')
+                conv5_flat = tf.reshape(conv5, [self.batch_size, -1])
+                # = slim.fully_connected(conv4_flat, 1, normalizer_fn=None, activation_fn=None, scope='d_fc1')
                 
-                return fc1
+                return tf.sigmoid(conv5_flat)
                 
                 
     def train(self, args):
@@ -222,8 +229,7 @@ class pix2pix:
         print('perpare data...')
         # perpare data
         data_list = glob(os.path.join(args.dataset_dir, args.dataset_name, args.phase, '*.png'))
-        print(data_list)
-        print(os.path.join(args.dataset_dir, args.dataset_name, args.phase, '*.png'))
+        
         print(len(data_list))
         batch_idxs = int(len(data_list) / self.batch_size)
         #print(batch_idxs)
