@@ -21,7 +21,7 @@ class pix2pix:
                  output_channels=3, 
                  df_dim=64, 
                  gf_dim=64, 
-                 content_lambda=100,
+                 content_lambda=10,
                  checkpoint_dir=None,
                  checkpoint_name=None,
                  dataset_name=None,
@@ -101,9 +101,9 @@ class pix2pix:
         # L1 loss
         # L1_loss = tf.reduce_mean(tf.abs(self.fake_B - self.input_B))
         # perceptual loss
-        perceptual_loss = perceptual_loss(self.input_B, self.fake_B)
+        perc_loss = perceptual_loss(self.input_B, self.fake_B)
         # content loss
-        self.content_loss = perceptual_loss
+        self.content_loss = perc_loss
         # fake images: encourage ones
         # self.G_adv_loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=self.D_fake_logits, labels=tf.ones_like(self.D_fake_logits)))
         self.G_adv_loss = tf.reduce_mean(-(tf.log(self.D_fake + EPS)))
@@ -206,7 +206,7 @@ class pix2pix:
                 conv4 = slim.conv2d(leaky_relu(conv3), self.df_dim * 8, [4,4], stride=1, scope='d_conv4')
                 
                 # 32 -> 32
-                conv5 = slim.conv2d(leaky_relu(conv4), 1, [4,4], stride=1, scope='d_conv5')
+                conv5 = slim.conv2d(leaky_relu(conv4), 1, [4,4], stride=1, normalizer_fn=None, scope='d_conv5')
 
                 # flatten
                 conv5_flat = tf.reshape(conv5, [self.batch_size, -1])
@@ -274,14 +274,14 @@ class pix2pix:
                 # feed in data
                 _, d_loss, summaries = self.sess.run([d_optimizer, self.d_loss, self.summaries],
                                                     feed_dict={self.input_A:input_A, self.input_B:input_B})
-                _, g_loss, L1_loss, summaries = self.sess.run([g_optimizer, self.g_loss, self.L1_loss, self.summaries],
+                _, g_loss, content_loss, summaries = self.sess.run([g_optimizer, self.g_loss, self.content_loss, self.summaries],
                                                              feed_dict={self.input_A:input_A, self.input_B:input_B})
                 #print('writing logs...') 
                 # update summary
                 counter += 1
                 end_time = time.time()
                 total_time = end_time - start_time
-                print('epoch{}[{}/{}]:phase:{}, total_time:{:.4f}, d_loss:{:.4f}, g_loss:{:.4f}, l1_loss:{:.4f}'.format(epoch, idx, batch_idxs, args.phase, total_time, d_loss, g_loss, self.L1_lambda*L1_loss))
+                print('epoch{}[{}/{}]:phase:{}, total_time:{:.4f}, d_loss:{:.4f}, g_loss:{:.4f}, content_loss:{:.4f}'.format(epoch, idx, batch_idxs, args.phase, total_time, d_loss, g_loss, self.content_lambda*content_loss))
                 self.train_summary_writer.add_summary(summaries, global_step=counter)
                 
                 # sample and save checkpoint
@@ -340,9 +340,9 @@ class pix2pix:
     def sample(self, sample_dir, epoch, idx, counter):
         print("")
         input_A, input_B = self.load_sample()
-        sample_B, d_loss, g_loss, L1_loss, summaries = self.sess.run([self.fake_B, self.d_loss, self.g_loss, self.L1_loss, self.summaries],
+        sample_B, d_loss, g_loss, content_loss, summaries = self.sess.run([self.fake_B, self.d_loss, self.g_loss, self.content_loss, self.summaries],
                                 feed_dict={self.input_A:input_A, self.input_B:input_B})
-        print('sampling: d_loss:{:.4f}, g_loss:{:.4f}, l1_loss:{:.4f}'.format(d_loss, g_loss, self.L1_lambda*L1_loss))
+        print('sampling: d_loss:{:.4f}, g_loss:{:.4f}, content_loss:{:.4f}'.format(d_loss, g_loss, self.content_lambda*content_loss))
         self.val_summary_writer.add_summary(summaries, global_step=counter)
 
         if np.mod(counter, 100) == 0:

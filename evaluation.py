@@ -7,10 +7,10 @@ import numpy
 import math
 
 def psnr(img1, img2):
-  mse = numpy.mean( (img1 - img2) ** 2 )
+  mse = numpy.mean( (img1/255. - img2/255.2) ** 2 )
   if mse == 0:
       return 100
-  PIXEL_MAX = 255.0
+  PIXEL_MAX = 1
   return 20 * math.log10(PIXEL_MAX / math.sqrt(mse))
 
 # for concatencated 3 images
@@ -64,7 +64,7 @@ def calculate_avg_psnr_sep(input_img_dir, ground_truth_dir, output_img_dir):
     input_img = scipy.misc.imread(os.path.join(input_img_dir, image_name))
     ground_truth = scipy.misc.imread(os.path.join(ground_truth_dir, image_name))
 
-    gt_psnr = psnr(input_img, ground_truth)
+    gt_psnr = psnr(ground_truth, input_img)
     #gt_ssim = ssim(input_img, ground_truth)
     print('Ground truth: psnr %f\n' % (gt_psnr))
 

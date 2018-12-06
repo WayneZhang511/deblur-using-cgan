@@ -56,7 +56,7 @@ def merge(images, size):
 def imsave(images, size, path):
     return scipy.misc.imsave(path, merge(images, size))
 
-def transform(image, npx=64, is_crop=True, resize_w=64):
+def transform(image, npx=64, is_crop=False, resize_w=64):
     # npx : # of pixels width/height of image
     if is_crop:
         cropped_image = center_crop(image, npx, resize_w=resize_w)
