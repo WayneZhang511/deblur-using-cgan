@@ -21,7 +21,7 @@ class pix2pix:
                  output_channels=3, 
                  df_dim=64, 
                  gf_dim=64, 
-                 L1_lambda=100,
+                 content_lambda=100,
                  checkpoint_dir=None,
                  checkpoint_name=None,
                  dataset_name=None,
@@ -47,7 +47,7 @@ class pix2pix:
         self.output_channels = output_channels
         self.df_dim = df_dim
         self.gf_dim = gf_dim
-        self.L1_lambda = L1_lambda
+        self.content_lambda = content_lambda
         self.sess = sess
         self.is_grayscale = (input_channels == 1)
         self.dataset_name = dataset_name
@@ -99,12 +99,16 @@ class pix2pix:
         
         # calculate generator loss
         # L1 loss
-        self.L1_loss = tf.reduce_mean(tf.abs(self.fake_B - self.input_B))
+        # L1_loss = tf.reduce_mean(tf.abs(self.fake_B - self.input_B))
+        # perceptual loss
+        perceptual_loss = perceptual_loss(self.input_B, self.fake_B)
+        # content loss
+        self.content_loss = perceptual_loss
         # fake images: encourage ones
         # self.G_adv_loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=self.D_fake_logits, labels=tf.ones_like(self.D_fake_logits)))
         self.G_adv_loss = tf.reduce_mean(-(tf.log(self.D_fake + EPS)))
         # sum up
-        self.g_loss = self.L1_lambda * self.L1_loss + self.G_adv_loss
+        self.g_loss = self.content_lambda * self.content_loss + self.G_adv_loss
             
         # trainable variables
         t_vars = tf.trainable_variables()
@@ -115,7 +119,7 @@ class pix2pix:
         self.d_real_loss_summary = tf.summary.scalar('d_real_loss', self.d_real_loss)
         self.d_fake_loss_summary = tf.summary.scalar('d_fake_loss', self.d_fake_loss)
         self.d_loss_summary = tf.summary.scalar('d_loss', self.d_loss)
-        self.L1_loss_summary = tf.summary.scalar('L1_loss', self.L1_loss)
+        self.L1_loss_summary = tf.summary.scalar('content_loss', self.content_loss)
         self.g_loss_summary = tf.summary.scalar('g_loss', self.g_loss)
         self.summaries = tf.summary.merge_all()
         self.train_summary_writer = tf.summary.FileWriter('logs/train', self.sess.graph)
