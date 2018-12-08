@@ -1,6 +1,7 @@
 import scipy.misc
 import numpy as np
 from scipy.ndimage.morphology import distance_transform_edt as euc_dist
+np.seterr(divide='ignore', invalid='ignore')
 
 def get_image(file_name):
     image = scipy.misc.imread(file_name)
@@ -146,20 +147,32 @@ def blend_image_pair(src_img, src_mask, dst_img, dst_mask):
     #     Blended image of shape (m, n, 3)
 
     w, d, _ = src_img.shape
-    blend_img = np.zeros(src_img.shape)
     
     src_dist = euc_dist(src_mask)
     dst_dist = euc_dist(dst_mask)
-    for i in range(w):
-        for j in range(d):
-            if src_mask[i][j] == 1:
-                blend_img[i,j,:] = src_img[i,j,:]
-            if dst_mask[i][j] == 1:
-                blend_img[i,j,:] = dst_img[i,j,:]
-            if src_mask[i][j] == 1 and dst_mask[i][j] == 1:
-                w1 = src_dist[i,j]
-                w2 = dst_dist[i,j]
-                blend_img[i,j,:] = (w1 * src_img[i,j,:] + w2 * dst_img[i,j,:]) / (w1 + w2)
+
+    blend_img_1 = np.copy(src_img)
+    for i in range(3):
+        channel_i = blend_img_1[:,:,i]
+        channel_i[np.where(src_mask[:,:] == 0)] = 0
+        channel_i[np.where(dst_mask[:,:] == 1)] = 0
+
+    blend_img_2 = np.copy(dst_img)
+    for i in range(3):
+        channel_i = blend_img_2[:,:,i]
+        channel_i[np.where(dst_mask[:,:] == 0)] = 0
+        channel_i[np.where(src_mask[:,:] == 1)] = 0
+
+    blend_img = blend_img_1 + blend_img_2
+    blend_mask = binary_mask(blend_img)
+    blend_img_3 = np.zeros(src_img.shape)
+    weight = src_dist + dst_dist
+    for i in range(3):
+        blend_img_3[:,:,i] = (src_img[:,:,i] * src_dist + dst_img[:,:,i] * dst_dist) / weight
+        channel_i = blend_img_3[:,:,i]
+        channel_i[np.where(blend_mask[:,:] == 1)] = 0
+    
+    blend_img = blend_img_1 + blend_img_2 + blend_img_3
                     
     return blend_img.astype(np.uint8)
 
