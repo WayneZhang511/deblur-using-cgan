@@ -21,7 +21,7 @@ class pix2pix:
                  output_channels=3, 
                  df_dim=64, 
                  gf_dim=64, 
-                 content_lambda=100,
+                 content_lambda=50,
                  checkpoint_dir=None,
                  checkpoint_name=None,
                  dataset_name=None,
@@ -99,11 +99,11 @@ class pix2pix:
         
         # calculate generator loss
         # L1 loss
-        #self.L1_loss = tf.reduce_mean(tf.abs(self.fake_B - self.input_B))
+        L1_loss = tf.reduce_mean(tf.abs(self.fake_B - self.input_B))
         # perceptual loss
         perc_loss = perceptual_loss(self.input_B, self.fake_B)
         # content loss
-        self.content_loss = perc_loss
+	self.content_loss = L1_loss + 10 * perc_loss
         # fake images: encourage ones
         # self.G_adv_loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=self.D_fake_logits, labels=tf.ones_like(self.D_fake_logits)))
         self.G_adv_loss = tf.reduce_mean(-(tf.log(self.D_fake + EPS)))
@@ -202,21 +202,21 @@ class pix2pix:
                                weights_initializer=tf.truncated_normal_initializer(stddev=0.02),
                                activation_fn=None,
                                normalizer_fn=slim.batch_norm,
-                               padding='SAME'):
+                               padding='VALID'):
                 # 256 -> 128
-                conv1 = slim.conv2d(image, self.df_dim, [4,4], stride=2, normalizer_fn=None, scope='d_conv1')
+                conv1 = slim.conv2d(image, self.df_dim, [5,5], stride=2, normalizer_fn=None, scope='d_conv1')
                 
                 # 128 -> 64
-                conv2 = slim.conv2d(leaky_relu(conv1), self.df_dim * 2, [4,4], stride=2, scope='d_conv2')
+                conv2 = slim.conv2d(leaky_relu(conv1), self.df_dim * 2, [5,5], stride=2, scope='d_conv2')
                 
                 # 64 -> 32
-                conv3 = slim.conv2d(leaky_relu(conv2), self.df_dim * 4, [4,4], stride=2, scope='d_conv3')
+                conv3 = slim.conv2d(leaky_relu(conv2), self.df_dim * 4, [5,5], stride=2, scope='d_conv3')
                 
                 # 32 -> 32
-                conv4 = slim.conv2d(leaky_relu(conv3), self.df_dim * 8, [4,4], stride=1, scope='d_conv4')
+                conv4 = slim.conv2d(leaky_relu(conv3), self.df_dim * 8, [5,5], stride=1, scope='d_conv4')
                 
                 # 32 -> 32
-                conv5 = slim.conv2d(leaky_relu(conv4), 1, [4,4], stride=1, normalizer_fn=None, scope='d_conv5')
+                conv5 = slim.conv2d(leaky_relu(conv4), 1, [5,5], stride=1, normalizer_fn=None, scope='d_conv5')
 
                 # flatten
                 conv5_flat = tf.reshape(conv5, [self.batch_size, -1])
