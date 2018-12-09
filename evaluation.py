@@ -147,7 +147,10 @@ def calculate_avg_psnr_sep(input_img_dir, ground_truth_dir, output_img_dir):
   f.write('Output: psnr %f, ssim %f, ms_ssim %f \n' % (sum_op_psnr / size, sum_op_ssim / size, sum_op_msssim / size))
   
   f.close()
-# calculate_avg_psnr('/Users/wayne/Desktop')
 
-calculate_avg_psnr_sep('blur_gamma_test', 'sharp_test', './deblurred-sample_blur_test')
+if __name__ == '__main__':
+  
+  # calculate_avg_psnr('/Users/wayne/Desktop')
+
+  calculate_avg_psnr_sep('blur_gamma_test', 'sharp_test', './deblurred-sample_blur_test')
 
